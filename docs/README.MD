@@ -36,50 +36,6 @@ The project follows strict software engineering principles using **Python** and 
 2.  **Observer/Callback Pattern**: CustomTkinter UI buttons are decoupled from logic using injected callback routing methods (`_analyze_text_callback`).
 3.  **Encapsulation**: Model and UI logics are safely boxed within isolated classes guarding class properties.
 
-## Class Diagram (UML)
-
-The following diagram illustrates the core class structure, highlighting the relationship between the visual interface, controlling logic, and the machine learning model.
-
-```mermaid
-classDiagram
-    class MainWindow {
-        - frames : dict
-        - _analyze_text_callback : callable
-        - _analyze_url_callback : callable
-        - _analyze_csv_callback : callable
-        + set_analyze_command(text_cb, url_cb, csv_cb)
-        + set_result(target, text, is_clickbait, is_error)
-        - _show_frame(frame_name)
-    }
-
-    class Clickbait {
-        - _binaries_dir : Path
-        - model : RandomForestClassifier
-        - buzzwords : list
-        + analyze_headline(text) tuple
-        - _validate_and_load_models()
-        - _count_words(text) int
-        - _calc_upper_ratio(text) float
-        - _has_buzzword(text) int
-    }
-
-    class TargetFile {
-        - filepath : str
-        + get_target_file() str
-    }
-    
-    class AppController {
-        - _view : MainWindow
-        - _model : Clickbait
-        + run()
-        - handle_text_analysis(text)
-        - handle_csv_batch(filepath)
-    }
-
-    AppController --> MainWindow : Controls
-    AppController --> Clickbait : Evaluates via
-    MainWindow --> TargetFile : Validates Path via
-``` 
 
 ## Example of Error Handling Flow
 When a user attempts to input invalid data or corrupt datasets, the system handles it gracefully:
