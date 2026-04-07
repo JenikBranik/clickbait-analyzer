@@ -123,7 +123,6 @@ class MainWindow(ctk.CTk):
         frame.grid_rowconfigure(0, weight=1)
         frame.grid_rowconfigure(4, weight=1)
         
-        # Central container for all content
         content_frame = ctk.CTkFrame(frame, fg_color="transparent")
         content_frame.grid(row=1, column=0, padx=20, pady=20, sticky="n")
         content_frame.grid_columnconfigure(0, weight=1)
@@ -131,20 +130,16 @@ class MainWindow(ctk.CTk):
         title_label = ctk.CTkLabel(content_frame, text="Batch CSV Analyzer", font=ctk.CTkFont(size=24, weight="bold"))
         title_label.grid(row=0, column=0, padx=20, pady=(0, 20))
 
-        # Card-like frame for controls
         controls_frame = ctk.CTkFrame(content_frame)
         controls_frame.grid(row=1, column=0, padx=20, pady=10, sticky="ew")
         controls_frame.grid_columnconfigure(0, weight=1)
         controls_frame.grid_columnconfigure(1, weight=1)
-
-        # Combobox row
         combo_label = ctk.CTkLabel(controls_frame, text="Data Type:", font=ctk.CTkFont(size=14, weight="bold"))
         combo_label.grid(row=0, column=0, padx=(20, 10), pady=(20, 10), sticky="e")
         
         self.csv_type_combobox = ctk.CTkComboBox(controls_frame, values=["Items are text", "Items are URL links"], font=ctk.CTkFont(size=14), width=180)
         self.csv_type_combobox.grid(row=0, column=1, padx=(10, 20), pady=(20, 10), sticky="w")
 
-        # File picker row
         file_label = ctk.CTkLabel(controls_frame, text="Target CSV:", font=ctk.CTkFont(size=14, weight="bold"))
         file_label.grid(row=1, column=0, padx=(20, 10), pady=(10, 20), sticky="e")
         
@@ -166,7 +161,6 @@ class MainWindow(ctk.CTk):
         self.csv_result_label = ctk.CTkLabel(content_frame, text='', font=ctk.CTkFont(size=14), text_color="gray")
         self.csv_result_label.grid(row=3, column=0, padx=20, pady=(0, 10))
 
-        # Bottom back button
         btn_back = ctk.CTkButton(frame, text="Back to menu", fg_color="gray", hover_color="darkgray", width=120,
                                  command=lambda: self._show_frame("menu_frame"))
         btn_back.grid(row=5, column=0, padx=20, pady=(0, 20))

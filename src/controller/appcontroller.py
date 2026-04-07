@@ -53,6 +53,7 @@ class AppController:
 
             preds = []
             chances = []
+            mediums = []
             
             for index, row in df.iterrows():
                 content = str(row[target_col])
@@ -69,17 +70,21 @@ class AppController:
                     if not query.strip():
                         preds.append("ERROR")
                         chances.append(0.0)
+                        mediums.append("ERROR")
                         continue
 
-                    is_cb, percent = self.model.analyze_headline(query)
+                    is_cb, percent, medium = self.model.analyze_headline(query)
                     preds.append(is_cb)
                     chances.append(percent)
+                    mediums.append(medium)
                 except Exception:
                     preds.append("ERROR")
                     chances.append(0.0)
+                    mediums.append("ERROR")
 
             df['Is_Clickbait_Pred'] = preds
             df['Clickbait_Chance'] = chances
+            df['Predicted_Outlet'] = mediums
 
             base, ext = os.path.splitext(file_path)
             out_file = f"{base}_analyzed{ext}"
@@ -97,8 +102,8 @@ class AppController:
         :param text: Text string passed in directly
         """
         try:
-            is_clickbait, percent = self.model.analyze_headline(text)
-            self._update_view("text", "Clickbait" if is_clickbait else "Not clickbait", is_clickbait, percent, False, f"(chance: {percent}%)")
+            is_clickbait, percent, medium = self.model.analyze_headline(text)
+            self._update_view("text", "Clickbait" if is_clickbait else "Not clickbait", is_clickbait, percent, False, f"(chance: {percent}%) [Outlet: {medium}]")
         except Exception as e:
             self._update_view("text", f"Error: {e}", is_error=True)
 
@@ -112,11 +117,11 @@ class AppController:
             if not title:
                 raise Exception("The URL link is unresponsive or malformed.")
 
-            is_clickbait, percent = self.model.analyze_headline(title)
+            is_clickbait, percent, medium = self.model.analyze_headline(title)
             
             pfx = f"Title found: {title}\nResult: "
             summary = pfx + ("Clickbait" if is_clickbait else "Not clickbait")
-            summary += f" (chance: {percent}%)"
+            summary += f" (chance: {percent}%) [Outlet: {medium}]"
             
             self._update_view("url", summary, is_clickbait, percent, False)
         except Exception as e:

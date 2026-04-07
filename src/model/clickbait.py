@@ -1,5 +1,4 @@
 import pickle
-import numpy as np
 import pandas as pd
 import warnings
 from pathlib import Path
@@ -7,9 +6,12 @@ from pathlib import Path
 
 class Clickbait:
     def __init__(self):
-        self._binaries_dir = Path(__file__).resolve().parent / 'ml'
+        self._binaries_dir = Path(__file__).resolve().parent.parent / 'data'
+        self._ml_dir = Path(__file__).resolve().parent / 'ml'
         self.buzzwords = ['děsivé ','peklo', 'otevřeně', 'ukázala', 'slzách', 'drama', 'odhalena', 'přiznání', 'detaily', 'šokující', 'hvězda']
         self.model = None
+        self.model_medium = None
+        self.label_encoder = None
         self._validate_and_load_models()
 
     def _validate_and_load_models(self):
@@ -18,23 +20,29 @@ class Clickbait:
         :raises FileNotFoundError: if the binaries directory or required files do not exist
         :raises OSError: if files are corrupted or cannot be loaded
         """
-        if not self._binaries_dir.is_dir():
-            raise FileNotFoundError(f"Missing models directory: {self._binaries_dir}")
+        if not self._ml_dir.is_dir():
+            raise FileNotFoundError(f"Missing ml directory: {self._ml_dir}")
 
-        model_path = self._binaries_dir / 'randomforestmodel.pkl'
+        model_path = self._ml_dir / 'randomforestmodel.pkl'
+        model_medium_path = self._binaries_dir / 'randomforestmediummodel.pkl'
+        encoder_path = self._binaries_dir / 'mediumlabelencoder.pkl'
 
         if not model_path.is_file():
             raise FileNotFoundError(f"Missing required model file: {model_path}")
 
-        print(f"Loading AI model from: {model_path} ...")
+        print(f"Loading AI models from: {self._ml_dir} and {self._binaries_dir} ...")
 
         try:
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
                 with open(model_path, 'rb') as f:
                     self.model = pickle.load(f)
+                with open(model_medium_path, 'rb') as f:
+                    self.model_medium = pickle.load(f)
+                with open(encoder_path, 'rb') as f:
+                    self.label_encoder = pickle.load(f)
         except Exception as e:
-            raise OSError(f"Failed to load AI model: {e}")
+            raise OSError(f"Failed to load AI models: {e}")
 
     def _count_words(self, text):
         """
@@ -107,11 +115,12 @@ class Clickbait:
             'Question_Count': [text.count('?')]
         })
 
-        # Random Forest in scikit-learn return probabilities via predict_proba
-        # The result is typically [[probability_of_class_0, probability_of_class_1]]
         chance = self.model.predict_proba(features)[0][1]
 
         is_clickbait = bool(chance > 0.5)
         percent = round(chance * 100, 1)
 
-        return is_clickbait, percent
+        medium_pred_idx = self.model_medium.predict(features)[0]
+        medium = self.label_encoder.inverse_transform([medium_pred_idx])[0]
+
+        return is_clickbait, percent, medium

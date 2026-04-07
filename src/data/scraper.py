@@ -34,17 +34,15 @@ rss_sources = {
     }
 }
 
-output_file = "dataset_final_headlines.csv"
+output_file = "dataset.csv"
 scraped_data = []
 
-print("Starting the Ultimate Dual-Target RSS Scraper...")
 
 def fetch_headlines():
     for outlet_name, outlet_data in rss_sources.items():
         primary_label = outlet_data["label"]
         feed_urls = outlet_data["urls"]
         
-        print(f"\nFetching news for: {outlet_name} (Primary Label: {primary_label})")
         for url in feed_urls:
             try:
                 feed = feedparser.parse(url)
@@ -63,22 +61,17 @@ def fetch_headlines():
 
 fetch_headlines()
 
-print("\nScraping finished. Processing data...")
-
 new_df = pd.DataFrame(scraped_data)
 
 if os.path.exists(output_file):
-    print(f"Existing dataset found. Merging new data...")
     existing_df = pd.read_csv(output_file)
     combined_df = pd.concat([existing_df, new_df], ignore_index=True)
 else:
-    print("Creating a new dataset file...")
     combined_df = new_df
 
 initial_count = len(combined_df)
 combined_df.drop_duplicates(subset=['Headline'], inplace=True)
 final_count = len(combined_df)
 
-print(f"Removed {initial_count - final_count} duplicate headlines.")
 
 combined_df.to_csv(output_file, index=False, encoding='utf-8-sig')
