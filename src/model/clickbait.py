@@ -1,53 +1,40 @@
 import pickle
 import numpy as np
 import pandas as pd
-
+import warnings
 from pathlib import Path
-from tensorflow.keras.models import load_model
 
 
 class Clickbait:
     def __init__(self):
-        """
-        Constructor initializes the buzzword dictionary and triggers model loading.
-        Path resolution is handled automatically relative to this file's location.
-        """
         self._binaries_dir = Path(__file__).resolve().parent / 'ml'
-        self.buzzwords = {word: 1 for word in ['děsivé ','peklo', 'otevřeně', 'ukázala', 'slzách', 'drama', 'odhalena', 'přiznání', 'detaily', 'šokující']}
+        self.buzzwords = ['děsivé ','peklo', 'otevřeně', 'ukázala', 'slzách', 'drama', 'odhalena', 'přiznání', 'detaily', 'šokující', 'hvězda']
         self.model = None
-        self.vectorizer = None
-        self.scaler = None
         self._validate_and_load_models()
 
     def _validate_and_load_models(self):
         """
-        Method for validating paths and loading serialized Machine Learning models.
+        Method for validating paths and loading the serialized Random Forest model.
         :raises FileNotFoundError: if the binaries directory or required files do not exist
         :raises OSError: if files are corrupted or cannot be loaded
         """
         if not self._binaries_dir.is_dir():
             raise FileNotFoundError(f"Missing models directory: {self._binaries_dir}")
 
-        model_path = self._binaries_dir / 'muj_model.keras'
-        vectorizer_path = self._binaries_dir / 'vectorizer.dat'
-        scaler_path = self._binaries_dir / 'scaler.dat'
+        model_path = self._binaries_dir / 'randomforestmodel.pkl'
 
-        for file_path in (model_path, vectorizer_path, scaler_path):
-            if not file_path.is_file():
-                raise FileNotFoundError(f"Missing required model file: {file_path}")
+        if not model_path.is_file():
+            raise FileNotFoundError(f"Missing required model file: {model_path}")
 
-        print(f"Loading AI models from: {self._binaries_dir} ...")
+        print(f"Loading AI model from: {model_path} ...")
 
         try:
-            self.model = load_model(str(model_path))
-
-            with open(vectorizer_path, 'rb') as f:
-                self.vectorizer = pickle.load(f)
-
-            with open(scaler_path, 'rb') as f:
-                self.scaler = pickle.load(f)
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                with open(model_path, 'rb') as f:
+                    self.model = pickle.load(f)
         except Exception as e:
-            raise OSError(f"Failed to load AI models: {e}")
+            raise OSError(f"Failed to load AI model: {e}")
 
     def _count_words(self, text):
         """
@@ -72,19 +59,19 @@ class Clickbait:
         upper_chars = sum(1 for c in text if c.isupper())
         return round(upper_chars / len(text), 3)
 
-    def _calculate_buzzword_score(self, text):
+    def _has_buzzword(self, text):
         """
-        Method computing the emotional score based on predefined buzzwords
+        Method counting the total occurrences of buzzwords
         :param text: headline text
-        :return: integer representing the total buzzword weight score
+        :return: integer representing the total amount of buzzwords found
         """
         if not isinstance(text, str):
             text = str(text)
         text_lower = text.lower()
         score = 0
-        for word, weight in self.buzzwords.items():
+        for word in self.buzzwords:
             if word in text_lower:
-                score += weight
+                score += 1
         return score
 
     def _contains_number(self, text):
@@ -102,7 +89,7 @@ class Clickbait:
 
     def analyze_headline(self, text):
         """
-        Main predictive method that prepares text and feeds it into the Neural Network
+        Main predictive method that prepares text and feeds it into the RandomForest
         :param text: headline string from the user input
         :return: boolean (is_clickbait) and float (probability percentage)
         :raises ValueError: if input text is empty or invalid
@@ -110,22 +97,19 @@ class Clickbait:
         if not isinstance(text, str) or not text.strip():
             raise ValueError("Input text must be a non-empty string")
 
-        num_features = pd.DataFrame({
+        features = pd.DataFrame({
             'Word_Count': [self._count_words(text)],
             'Upper_Ratio': [self._calc_upper_ratio(text)],
+            'Has_Buzzword': [self._has_buzzword(text)],
+            'Contains_Number': [self._contains_number(text)],
             'Comma_Count': [text.count(',')],
             'Exclamation_Count': [text.count('!')],
-            'Question_Count': [text.count('?')],
-            'Has_Buzzword': [self._calculate_buzzword_score(text)],
-            'Contains_Number': [self._contains_number(text)]
+            'Question_Count': [text.count('?')]
         })
 
-        text_vec = self.vectorizer.transform([text]).toarray()
-        num_scaled = self.scaler.transform(num_features)
-
-        final_input = np.hstack((text_vec, num_scaled))
-
-        chance = self.model.predict(final_input, verbose=0)[0][0]
+        # Random Forest in scikit-learn return probabilities via predict_proba
+        # The result is typically [[probability_of_class_0, probability_of_class_1]]
+        chance = self.model.predict_proba(features)[0][1]
 
         is_clickbait = bool(chance > 0.5)
         percent = round(chance * 100, 1)
