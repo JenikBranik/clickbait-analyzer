@@ -6,9 +6,6 @@ class UrlParser:
     Model class handling standard internet protocols to extract raw structured text content.
     """
     def __init__(self):
-        """
-        Constructor linking object state references.
-        """
         pass
 
     def extract_title(self, url):

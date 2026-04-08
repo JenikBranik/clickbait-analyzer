@@ -53,7 +53,7 @@ class MainWindow(ctk.CTk):
                                 command=lambda: self._show_frame("url_frame"))
         btn_url.grid(row=2, column=0, padx=40, pady=10, sticky="ew")
 
-        btn_csv = ctk.CTkButton(frame, text="CSV Batch Processor", height=50, font=ctk.CTkFont(size=16),
+        btn_csv = ctk.CTkButton(frame, text="CSV", height=50, font=ctk.CTkFont(size=16),
                                 command=lambda: self._show_frame("csv_frame"))
         btn_csv.grid(row=3, column=0, padx=40, pady=10, sticky="ew")
 
@@ -73,7 +73,7 @@ class MainWindow(ctk.CTk):
         self.text_input = ctk.CTkTextbox(frame, height=150, font=ctk.CTkFont(size=14))
         self.text_input.grid(row=1, column=0, padx=20, pady=10, sticky="nsew")
         self.text_input.insert("0.0", "Enter text to analyze...")
-        self.text_input.bind("<FocusIn>", lambda e: self.text_input.delete("0.0", "end") if self.text_input.get("0.0", "end-1c") == "Enter text to analyze..." else None)
+        self.text_input.bind("<FocusIn>", self._clear_placeholder)
 
         btn_analyze = ctk.CTkButton(frame, text="Analyze Text", font=ctk.CTkFont(size=16, weight="bold"), height=40,
                                     command=lambda: self._on_analyze_click("text"))
@@ -98,14 +98,14 @@ class MainWindow(ctk.CTk):
         title_label = ctk.CTkLabel(frame, text="URL Analyzer", font=ctk.CTkFont(size=20, weight="bold"))
         title_label.grid(row=0, column=0, padx=20, pady=(20, 10))
 
-        self.url_input = ctk.CTkEntry(frame, placeholder_text="Enter http:// or https://...", font=ctk.CTkFont(size=14), height=40)
+        self.url_input = ctk.CTkEntry(frame, placeholder_text="Enter URL", font=ctk.CTkFont(size=14), height=40)
         self.url_input.grid(row=1, column=0, padx=20, pady=20, sticky="ew")
 
         btn_analyze = ctk.CTkButton(frame, text="Analyze URL", font=ctk.CTkFont(size=16, weight="bold"), height=40,
                                     command=lambda: self._on_analyze_click("url"))
         btn_analyze.grid(row=2, column=0, padx=20, pady=10)
 
-        self.url_result_label = ctk.CTkLabel(frame, text="Result will be displayed here.", font=ctk.CTkFont(size=16), text_color="gray")
+        self.url_result_label = ctk.CTkLabel(frame, text="Result will be here.", font=ctk.CTkFont(size=16), text_color="gray")
         self.url_result_label.grid(row=3, column=0, padx=20, pady=10)
 
         btn_back = ctk.CTkButton(frame, text="Back to menu", fg_color="gray", hover_color="darkgray",
@@ -127,7 +127,7 @@ class MainWindow(ctk.CTk):
         content_frame.grid(row=1, column=0, padx=20, pady=20, sticky="n")
         content_frame.grid_columnconfigure(0, weight=1)
 
-        title_label = ctk.CTkLabel(content_frame, text="Batch CSV Analyzer", font=ctk.CTkFont(size=24, weight="bold"))
+        title_label = ctk.CTkLabel(content_frame, text="CSV Analyzer", font=ctk.CTkFont(size=24, weight="bold"))
         title_label.grid(row=0, column=0, padx=20, pady=(0, 20))
 
         controls_frame = ctk.CTkFrame(content_frame)
@@ -146,7 +146,7 @@ class MainWindow(ctk.CTk):
         file_action_frame = ctk.CTkFrame(controls_frame, fg_color="transparent")
         file_action_frame.grid(row=1, column=1, padx=(10, 20), pady=(10, 20), sticky="w")
 
-        btn_select = ctk.CTkButton(file_action_frame, text="Browse...", width=80, command=self._pick_csv_file)
+        btn_select = ctk.CTkButton(file_action_frame, text="Browse", width=80, command=self._pick_csv_file)
         btn_select.grid(row=0, column=0, padx=(0, 10))
 
         self.csv_file_label = ctk.CTkLabel(file_action_frame, text="No file selected", font=ctk.CTkFont(size=13, slant="italic"), text_color="gray")
@@ -154,7 +154,7 @@ class MainWindow(ctk.CTk):
         
         self.selected_csv_path = None
 
-        btn_analyze = ctk.CTkButton(content_frame, text="Start Batch Analyze", font=ctk.CTkFont(size=16, weight="bold"), height=45, width=220,
+        btn_analyze = ctk.CTkButton(content_frame, text="Start Analyze", font=ctk.CTkFont(size=16, weight="bold"), height=45, width=220,
                                     command=lambda: self._on_analyze_click("csv"))
         btn_analyze.grid(row=2, column=0, padx=20, pady=(20, 10))
 
@@ -166,6 +166,15 @@ class MainWindow(ctk.CTk):
         btn_back.grid(row=5, column=0, padx=20, pady=(0, 20))
 
         self.frames["csv_frame"] = frame
+
+    def _clear_placeholder(self, event=None):
+        """
+        Method removing placeholder text from the text input field upon focus.
+        :param event: Tkinter event object passed automatically by the bind call
+        """
+        current_text = self.text_input.get("0.0", "end-1c")
+        if current_text == "Enter text to analyze":
+            self.text_input.delete("0.0", "end")
 
     def _pick_csv_file(self):
         """
@@ -216,8 +225,8 @@ class MainWindow(ctk.CTk):
         """
         if input_type == "text" and self._analyze_text_callback:
             text = self.text_input.get("0.0", "end-1c").strip()
-            if text and text != "Enter text to analyze...":
-                self.set_result("text", "Processing...", text_color="gray")
+            if text and text != "Enter text to analyze":
+                self.set_result("text", "Processing", text_color="gray")
                 self._analyze_text_callback(text)
             else:
                 self.set_result("text", "Please enter some text for analysis.", is_error=True)

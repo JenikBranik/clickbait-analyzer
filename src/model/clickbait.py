@@ -6,7 +6,6 @@ from pathlib import Path
 
 class Clickbait:
     def __init__(self):
-        self._binaries_dir = Path(__file__).resolve().parent.parent / 'data'
         self._ml_dir = Path(__file__).resolve().parent / 'ml'
         self.buzzwords = ['děsivé ','peklo', 'otevřeně', 'ukázala', 'slzách', 'drama', 'odhalena', 'přiznání', 'detaily', 'šokující', 'hvězda']
         self.model = None
@@ -24,13 +23,12 @@ class Clickbait:
             raise FileNotFoundError(f"Missing ml directory: {self._ml_dir}")
 
         model_path = self._ml_dir / 'randomforestmodel.pkl'
-        model_medium_path = self._binaries_dir / 'randomforestmediummodel.pkl'
-        encoder_path = self._binaries_dir / 'mediumlabelencoder.pkl'
+        model_medium_path = self._ml_dir / 'randomforestmediummodel.pkl'
+        encoder_path = self._ml_dir / 'mediumlabelencoder.pkl'
 
         if not model_path.is_file():
             raise FileNotFoundError(f"Missing required model file: {model_path}")
 
-        print(f"Loading AI models from: {self._ml_dir} and {self._binaries_dir} ...")
 
         try:
             with warnings.catch_warnings():
@@ -64,7 +62,10 @@ class Clickbait:
             text = str(text)
         if len(text) == 0:
             return 0.0
-        upper_chars = sum(1 for c in text if c.isupper())
+        upper_chars = 0
+        for c in text:
+            if c.isupper():
+                upper_chars += 1
         return round(upper_chars / len(text), 3)
 
     def _has_buzzword(self, text):

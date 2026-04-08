@@ -9,13 +9,10 @@ class App:
         ctk.set_appearance_mode("System")
         ctk.set_default_color_theme("blue")
 
-        print("Initializing Model...")
         model = Clickbait()
 
-        print("Initializing User Interface...")
         view = MainWindow()
 
         AppController(model, view)
 
-        print("Application started.")
         view.mainloop()
