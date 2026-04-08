@@ -55,7 +55,7 @@ def fetch_headlines():
                         "Is_Clickbait": primary_label
                     })
             except Exception as e:
-                print(f" -> Error parsing {url}: {e}")
+                raise Exception(f"Error parsing {url}: {e}")
             
             time.sleep(1)
 
