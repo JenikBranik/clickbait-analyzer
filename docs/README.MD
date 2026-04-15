@@ -15,9 +15,9 @@ Clickbait Analyzer is a comprehensive desktop-based Machine Learning application
 * **Python 3.8+**
 * **Trained ML Model** (randomforestmodel.pkl required in src/model/ml)
 * **Libraries**:
-    * `scikit-learn` & `tensorflow` (for predictive ML evaluation)
-    * `pandas` & `numpy` (for fast batch dataset processing)
-    * `customtkinter` (for modern UI layout rendering)
+    * `scikit-learn==1.8.0` & `tensorflow==2.20.0` (for predictive ML evaluation)
+    * `pandas==2.3.3` & `numpy==2.4.0` (for fast batch dataset processing)
+    * `customtkinter==5.2.2` (for modern UI layout rendering)
 
 ## Features (User Requirements)
 
@@ -49,6 +49,12 @@ except PermissionError as e:
     # Safely flags the error on the graphical interface instead of crashing
     self.set_result("csv", f"Permission: {e}", is_error=True)
 ```
+
+## Google Colab Notebook
+
+Postup tvorby, trénování a vyhodnocení ML modelu je zdokumentován v Google Colab Notebooku:
+
+* [Clickbait Analyzer – Model Training & Evaluation](https://colab.research.google.com/drive/13HKi8jWwgzIjV5RrQGIXXm8R2MI2le8g?usp=sharing)
 
 ## About project
 
