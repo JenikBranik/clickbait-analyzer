@@ -58,8 +58,10 @@ def fetch_headlines():
                 raise Exception(f"Error parsing {url}: {e}")
             
             time.sleep(1)
-
-fetch_headlines()
+try:
+    fetch_headlines()
+except Exception as e:
+    print(e)
 
 new_df = pd.DataFrame(scraped_data)
 
