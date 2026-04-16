@@ -49,7 +49,9 @@ class AppController:
         try:
             df = pd.read_csv(file_path)
             
-            target_col = 'Headline' if 'Headline' in df.columns else df.columns[0]
+            target_col = df.columns[0]
+            if 'Headline' in df.columns:
+                target_col = 'Headline'
 
             preds = []
             chances = []
@@ -103,7 +105,10 @@ class AppController:
         """
         try:
             is_clickbait, percent, medium = self.model.analyze_headline(text)
-            self._update_view("text", "Clickbait" if is_clickbait else "Not clickbait", is_clickbait, percent, False, f"(chance: {percent}%) [Outlet: {medium}]")
+            status = "Not clickbait"
+            if is_clickbait:
+                status = "Clickbait"
+            self._update_view("text", status, is_clickbait, percent, False, f"(chance: {percent}%) [Outlet: {medium}]")
         except Exception as e:
             self._update_view("text", f"Error: {e}", is_error=True)
 
@@ -120,7 +125,10 @@ class AppController:
             is_clickbait, percent, medium = self.model.analyze_headline(title)
             
             pfx = f"Title found: {title}\nResult: "
-            summary = pfx + ("Clickbait" if is_clickbait else "Not clickbait")
+            status = "Not clickbait"
+            if is_clickbait:
+                status = "Clickbait"
+            summary = pfx + status
             summary += f" (chance: {percent}%) [Outlet: {medium}]"
             
             self._update_view("url", summary, is_clickbait, percent, False)
