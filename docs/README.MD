@@ -52,8 +52,6 @@ except PermissionError as e:
 
 ## Google Colab Notebook
 
-Postup tvorby, trénování a vyhodnocení ML modelu je zdokumentován v Google Colab Notebooku:
-
 * [Clickbait Analyzer – Model Training & Evaluation](https://colab.research.google.com/drive/13HKi8jWwgzIjV5RrQGIXXm8R2MI2le8g?usp=sharing)
 
 ## About project
